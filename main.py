@@ -12,6 +12,11 @@ class Arithmetic(BaseModel):
     y: int
     operation_type: str
 
+@app.get('/')
+def index():
+    return {
+        'Hello':'Welcome to My first fast'
+    }
 
 @app.post('/evaluate')
 def calculate(arit: Arithmetic):
