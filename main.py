@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import re
-
+from source import celebrity_api2
+from dataclass import DataClass
+from tech_matt import vip_calc
 
 app = FastAPI()
 
@@ -12,11 +14,13 @@ class Arithmetic(BaseModel):
     y: int
     operation_type: str
 
+
 @app.get('/')
 def index():
     return {
-        'Hello':'Welcome to My first fast'
+        'Hello': 'Welcome to My first fast'
     }
+
 
 @app.post('/evaluate')
 def calculate(arit: Arithmetic):
@@ -91,3 +95,61 @@ def solve_quiz(text, first, second):
         return [solve, operation]
 
     return None
+
+
+@app.get("/scrape")
+def scrape_something():
+
+    from .scrape import get_names
+
+    get_names()
+    return {
+        "ok": True
+    }
+
+
+# @app.get("/search/{name}")
+# def process_class(name: str):
+
+#     # Source classes
+#     # data1 = celebrity_api2(name)  # celebrity API
+#     # data2 = celebrity_api2(name)  # Twitter API
+#     # data3 = celebrity_api2(name)  # LinkedIn API
+#     # data4 = celebrity_api2(name)
+
+#     from forbes import vip
+
+
+#     data1 = vip.process(name) #forbes
+
+#     obj = DataClass([data1]) #dataclass 
+
+#     final_response = obj.initiate()
+
+#     return final_response
+
+
+@app.get("/search/{name}")
+def process_class(name: str):
+
+    # Source classes
+    # data1 = celebrity_api2(name)  # celebrity API
+    # data2 = celebrity_api2(name)  # Twitter API
+    # data3 = celebrity_api2(name)  # LinkedIn API
+    # data4 = celebrity_api2(name)
+
+
+    from processing import Process
+    from forbes import vip
+
+    process = Process({"name": name})
+
+    # [[{},{}]]
+
+    # obj = DataClass([data1])
+
+    # final_response = obj.initiate()
+
+    return process.main()
+
+  

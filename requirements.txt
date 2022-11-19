@@ -31,3 +31,6 @@ urllib3==1.26.12
 uvicorn==0.18.3
 watchfiles==0.18.0
 websockets==10.4
+numpy==1.23.4
+pandas==1.5.1
+pyforbes==1.0.3
