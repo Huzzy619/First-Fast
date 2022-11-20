@@ -108,28 +108,86 @@ def scrape_something():
     }
 
 
-# @app.get("/search/{name}")
-# def process_class(name: str):
-
-#     # Source classes
-#     # data1 = celebrity_api2(name)  # celebrity API
-#     # data2 = celebrity_api2(name)  # Twitter API
-#     # data3 = celebrity_api2(name)  # LinkedIn API
-#     # data4 = celebrity_api2(name)
-
-#     from forbes import vip
-
-
-#     data1 = vip.process(name) #forbes
-
-#     obj = DataClass([data1]) #dataclass 
-
-#     final_response = obj.initiate()
-
-#     return final_response
-
-
 @app.get("/search/{name}")
+def process_class(name: str):
+
+    # Source classes
+    # data1 = celebrity_api2(name)  # celebrity API
+    # data2 = celebrity_api2(name)  # Twitter API
+    # data3 = celebrity_api2(name)  # LinkedIn API
+    # data4 = celebrity_api2(name)
+
+    data1 = [
+        {
+            "name": "elon musk",
+            "age": 51,
+            "gender": "male",
+            "occupation": [
+
+                    "film_producer",
+                    "engineer",
+            ],
+            "vip_score": 8.75,
+        },
+        {
+            "name": "Elon musk",
+            "age": 53,
+            "gender": "male",
+            "occupation": [
+
+                    "film_producer",
+                    "engineer",
+            ],
+            "vip_score": 20.75,
+        },
+        {
+            "name": "musa camoru",
+            "age": 51,
+            "gender": "male",
+            "occupation": [
+
+                    "film_producer",
+                    "engineer",
+            ],
+            "vip_score": 8.75,
+        },
+
+        {
+            "name": "barack obama",
+            "age": 12,
+            "gender": "Male",
+            "occupation": "politics",
+            "vip_score": 3,
+        },
+
+        {
+            "name": "cole Obama",
+            "age": 14,
+            "gender": "male",
+            "occupation": "politics",
+            "vip_score": 8,
+        },
+    ]
+
+    data2 = [
+        {
+            "name": "barack obama",
+            "age": 12,
+            "gender": "Male",
+            "occupation": "politics",
+            "vip_score": 3,
+        },
+    ]
+
+
+    obj = DataClass([data1, data2], name=name ) #dataclass 
+
+    final_response = obj.initiate()
+
+    return final_response
+
+
+@app.get("/search2/{name}")
 def process_class(name: str):
 
     # Source classes

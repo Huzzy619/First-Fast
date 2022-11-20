@@ -1,7 +1,36 @@
-TO Use the DataClass from the dataclass module 
 
+# Project Title
+
+A brief description of what this project does and who it's for
+
+
+## Run Locally
+
+
+Install dependencies
+
+```bash
+  pip install fastapi "uvicorn[standard]"
+```
+
+To run directly 
+
+```bash
+  python dataclass.py
+```
+
+
+## Documentation
+
+[Documentation](https://linktodocumentation)
+
+To use the DataClass from the dataclass module 
+```bash
 from dataclass import DataClass
+```
 
+Structure
+```bash
 data = DataClass(
     
     [
@@ -12,11 +41,12 @@ data = DataClass(
         ...
     ] 
   )
+```
 
 Note: it has to be a List of list(Data source) of Dictionaries(profiles)
 
 Optionally: Any of these "Keyword arguments" can be passed to help filter the results better, 'name' is required
-
+```bash
             data = DataClass(
 
                 [
@@ -33,7 +63,7 @@ Optionally: Any of these "Keyword arguments" can be passed to help filter the re
                 gender = 'male',
 
                 )
-
+```
 
 
 A very important thing to note is that the DataClass expects the dictionaries to have all of these keys.
@@ -67,7 +97,6 @@ Example:
         },
     ]
 
-Note: all alphabets to be sent should be in lower_case except the None of course as it is a reserved type.
 
 
 Finally, to execute the Dataclass:
@@ -77,4 +106,4 @@ response = data.initiate()
 
 This will return unique profile(s) gotten from all sources.
 
-Please reach out to me (@Huzzy-K) in case of any further complications
+Please reach out to me (@Huzzy-K or @Tech Matt) in case of any further complications

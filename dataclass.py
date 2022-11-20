@@ -1,5 +1,6 @@
 import json
 import math
+from fastapi import HTTPException, status
 
 
 class DataClass:
@@ -9,7 +10,6 @@ class DataClass:
         self.data_list = data_list
 
     def initiate(self):
-        print(self.data_list)
         unique_list = self.extract_unique()
 
         cleaned_data = self.clean(unique_list)
@@ -19,7 +19,7 @@ class DataClass:
     def extract_unique(self):
         converts = []
 
-        new_results = self.filter()
+        new_results = self.filter_check()
 
         for obj in new_results:
             converted_dicts = {json.dumps(par) for par in obj}
@@ -27,29 +27,34 @@ class DataClass:
             converts.append(converted_dicts)
 
         for item in converts:
+            # Using Set Union Operation to remove duplicate entry
             converts[0] |= item
 
             final = converts[0]
 
         final = [json.loads(item) for item in final]
 
+        print(final)
         return final
 
     def get_average_vip_score(self, package):
 
         scores = [item['vip_score'] for item in package]
 
-        average = sum(scores)/len(package)
+        try:
+            average = sum(scores)/len(package)
+        except:
+            return None
 
         return average
 
     def clean(self, unique_list):
 
-        clean_list = []
+        profile_list = []
 
         for item in unique_list:
             pre_list = [
-                piece for piece in unique_list if piece['name'] == item['name']]
+                piece for piece in unique_list if piece['name'].lower() == item['name'].lower()]
 
             item['vip_score'] = self.get_average_vip_score(pre_list)
 
@@ -57,13 +62,26 @@ class DataClass:
 
             item['occupation'] = self.merge_occupations(pre_list)
 
-            item['age'] = self.process_duplicate_age(pre_list)
+            # in case of diffent age from different data source
+            item['age'] = self.process_duplicate_age(pre_list) 
 
-            clean_list.append(item)
+            profile_list.append(item)
 
-            for obj in unique_list:
-                if obj['name'] == item['name']:
-                    unique_list.remove(obj)
+            # Remove all profiles with same name after processing it
+            for trojan in unique_list:
+                if trojan['name'].lower() == item['name'].lower():
+                    unique_list.remove(trojan)
+
+        # Convert all values to lowercase
+
+        clean_list = []
+        for profile in profile_list:
+
+            data = {
+                key: value.lower() if isinstance(value, str) else value for key, value in profile.items()
+            }
+
+            clean_list.append(data)
 
         return clean_list
 
@@ -82,44 +100,69 @@ class DataClass:
 
     def process_duplicate_age(self, pre_list):
 
-        ages = [int(item['age']) for item in pre_list]
+        ages = []
+        for item in pre_list:
+            if not item['age'] == None:
+                age = int(item['age'])
+                ages.append(age)
 
-        age = math.ceil(sum(ages)/len(pre_list))
+        try:
+            age = math.ceil(sum(ages)/len(ages))
+
+        except ZeroDivisionError:
+
+            return None
 
         return age
 
-    def filter(self):
+    def filter_check(self):
 
         parameters = list(self.kwargs.values())
+        parameters = [item.lower() if isinstance(
+            item, str) else item for item in parameters]
         kwargs = self.kwargs
 
         new_results = []
 
-        for data in self.data_list:
+        data_list = list(filter(None, self.data_list))
+
+        for data in data_list:
 
             # initial
             filtered_list = data
 
-            # # name_filter
-            # if kwargs.get('name', ''):
-            #     filtered_list = [
-            #         item for item in filtered_list if kwargs['name'] in item['name']]
+            # name_filter
+            if kwargs.get('name', ''):
+                filtered_list = [
+                    item for item in filtered_list if kwargs['name'].lower() in item['name'].lower()]
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="name is required")
 
             # gender_filter
-            # if kwargs.get('gender', ''):
-            #     filtered_list = [
-            #         item for item in filtered_list if item[0]['gender'] in parameters]
+            if kwargs.get('gender', ''):
+                filtered_list = [
+                    item for item in filtered_list if item['gender'].lower() in parameters]
 
-            # # age_filter
-            # if kwargs.get('age', ''):
-            #     filtered_list = [
-            #         item for item in filtered_list if item['age'] in parameters]
+            # age_filter
+            if kwargs.get('age', ''):
+                filtered_list = [
+                    item for item in filtered_list if item['age'] in parameters]
 
-            # # occupation_filter
-            # if kwargs.get('occupation', ''):
-            #     filtered_list = [
-            #         item for item in filtered_list if kwargs['occupation'] in item['occupation']]
+            # occupation_filter
+            if kwargs.get('occupation', ''):
+                for item in filtered_list:
+                    if isinstance(item['occupation'], str):
+                        occupation = item['occupation'].lower()
 
-            new_results.append(filtered_list)
+                    if isinstance(item['occupation'], list):
+                        occupation_list = [occupation.lower()
+                                           for occupation in item['occupation']]
+
+                filtered_list = [
+                    item for item in filtered_list if kwargs['occupation'].lower() in occupation or occupation_list]
+
+            if filtered_list:
+                new_results.append(filtered_list)
 
         return new_results
