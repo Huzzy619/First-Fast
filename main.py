@@ -179,8 +179,7 @@ def process_class(name: str):
         },
     ]
 
-
-    obj = DataClass([data1, data2], name=name ) #dataclass 
+    obj = DataClass([data1, data2], name=name)  # dataclass
 
     final_response = obj.initiate()
 
@@ -196,7 +195,6 @@ def process_class(name: str):
     # data3 = celebrity_api2(name)  # LinkedIn API
     # data4 = celebrity_api2(name)
 
-
     from processing import Process
     from forbes import vip
 
@@ -210,4 +208,14 @@ def process_class(name: str):
 
     return process.main()
 
-  
+
+@app.get('/run')
+def run():
+    from NovuPy.subscribers import Subscribers
+
+    ak = Subscribers()
+    return {
+
+        'hey': '1'
+
+    }
