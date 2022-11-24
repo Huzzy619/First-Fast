@@ -1,39 +1,44 @@
-import requests
-from decouple import config
+import httpx
 
-class Activity:
-    base_url = 'https://api.novu.co/v1'
+from .settings import Core
 
-    # simple header with just Api_key
-    # declare api_key in .env file
-    s_header = {'Authorization': 'ApiKey' + config('NOVU_API_KEY', '')}
 
-    headers = {
-        'Authorization': 'ApiKey'+config('NOVU_API_KEY'),
-        'Content_Type': 'application/json'
-    }
-
-    def __init__(self) -> None:
-
-        pass
+class Activity(Core):
 
     async def get_activity(self, **kwargs):
         """
         Get activity feed
+
+        A page query parameter can be passed into the function to paginate response e.g {page: 2}. 
+        Example response:
+        {
+            totalCount: 0,
+            data: ["data"],
+            pageSize: 0,
+            page: 0
+        }
+
         """
         url = self.base_url+'/activity'
-        response = await requests.get(url=url, headers=self.s_header, params=kwargs )
+
+        async with httpx.AsyncClient() as requests:
+            response = await requests.get(url=url, headers=self.s_header, params=kwargs)
 
         return response.json()
 
     async def get_activity_stats(self):
         """
         Get activity statistics
+
+        Example response:
+        {
+            weeklySent: 0,
+            monthlySent: 0,
+            yearlySent: 0
+        }
         """
         url = self.base_url+'/activity/stats'
-        response = await requests.get(url=url, headers=self.s_header)
+        async with httpx.AsyncClient() as requests:
+            response = await requests.get(url=url, headers=self.s_header)
 
         return response.json()
-
-    
-    

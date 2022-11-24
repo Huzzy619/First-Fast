@@ -208,14 +208,40 @@ def process_class(name: str):
 
     return process.main()
 
+import asyncio
 
 @app.get('/run')
-def run():
+async def run():
     from NovuPy.subscribers import Subscribers
+    from NovuPy.events import Events
+    from NovuPy.feed import Feed
+    # from NovuPy.settings import check
 
     ak = Subscribers()
+    event = Events()
+
+    messages = await event.get_messages()
+    subscribers = await Subscribers().identify(user_id='637dbdf22610c8737861dfdf')
+
+    print(messages)
+    
+    from testing import test_endpoint, hello
+    import asyncio
+
+    
+
+    # here = asyncio.run( test_endpoint())
+    # here = asyncio.run(hello())
+    # here = await hello()
+
+
+    # print(here)
+
     return {
 
-        'hey': '1'
+        'hey': '1',
+        'code': 'here',
+        # 'url': check.base_url
+        'subscriber': subscribers
 
     }

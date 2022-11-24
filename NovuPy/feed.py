@@ -1,29 +1,31 @@
-import requests
-from decouple import config
+import httpx
+
+from .settings import Core
 
 
-class Activity:
-    base_url = 'https://api.novu.co/v1'
+class Feed(Core):
+    """
+    Track feed by passing {'name': name} 
 
-    # simple header with just Api_key
-    # declare api_key in .env file
-    s_header = {'Authorization': 'ApiKey' + config('NOVU_API_KEY', '')}
+    Example Response:
 
-    headers = {
-        'Authorization': 'ApiKey'+config('NOVU_API_KEY'),
-        'Content_Type': 'application/json'
-    }
-
-    def __init__(self) -> None:
-
-        pass
+    {
+        _id: "_id",
+        name: "name",
+        identifier: "identifier",
+        _environmentId: "_environmentId",
+        _organizationId: "_organizationId"
+}
+    """
 
     async def get_feeds(self):
         """
         Get feed
         """
         url = self.base_url+'/feeds'
-        response = await requests.get(url=url, headers=self.s_header)
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url=url, headers=self.s_header)
 
         return response.json()
 
@@ -32,7 +34,9 @@ class Activity:
         Create Feed
         """
         url = self.base_url+'/feeds'
-        response = await requests.post(url=url, headers=self.header, data=data)
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url=url, headers=self.header, data=data)
 
         return response.json()
 
@@ -41,6 +45,8 @@ class Activity:
         Create Feed
         """
         url = self.base_url+f'/feeds/{feed_id}'
-        response = await requests.delete(url=url, headers=self.header)
+
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(url=url, headers=self.header)
 
         return response.json()

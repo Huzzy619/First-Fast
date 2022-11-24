@@ -1,29 +1,29 @@
-import requests
-from decouple import config
+import httpx
 from fastapi import HTTPException, status
 
-class Events:
-    base_url = 'https://api.novu.co/v1'
+from .settings import Core
 
-    # simple header with just Api_key
-    # declare api_key in .env file
-    s_header = {'Authorization': 'ApiKey' + config('NOVU_API_KEY')}
 
-    headers = {
-        'Authorization': 'ApiKey'+config('NOVU_API_KEY'),
-        'Content_Type': 'application/json'
-    }
-
-    def __init__(self) -> None:
-
-        pass
+class Events(Core):
 
     async def get_messages(self, **kwargs):
         """
         Returns a list of messages, could paginate using the `page` query parameter
+
+        The query can be passed to the function as a dict---> {page: 3}
+
+        Sample Response:
+        {
+            totalCount: 0,
+            data: ["data"],
+            pageSize: 0,
+            page: 0
+        }
         """
-        url = self.base_url + self.base_url + f'/messages'
-        response = await requests.get(url=url, headers=self.s_header, params=kwargs)
+        url = self.base_url + f'/messages'
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url=url, headers=self.s_header, params=kwargs)
 
         return response.json()
 
@@ -33,7 +33,8 @@ class Events:
         """
         url = self.base_url + f'/messages/{message_id}'
 
-        response = await requests.delete(url=url, headers=self.s_header)
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(url=url, headers=self.s_header)
         return response.json()
 
     async def trigger(self, event, data):
@@ -41,20 +42,63 @@ class Events:
         Trigger event is the main (and the only) way to send notification to subscribers. 
         The trigger identifier is used to match the particular template associated with it. 
         Additional information can be passed according the the body interface below.
+
+        To make a trigger: 
+
+            {
+                "name": "Novu",   
+                "payload": {                      
+                    "test": "test"
+                },
+                "to": {
+                        subscriberId: '<USER_IDENTIFIER>',
+                        email: 'email@email.com',
+                        firstName: 'John',
+                        lastName: 'Doe',
+                }, 
+                "transactionId": "transactionId"  
+            }
+
+
+        name - #This refers to the name of the notification template you intend to use
+        payload - # The payload object is used to pass additional custom information that could be used to render the template, or perform routing rules based on it. 
+                  #This data will also be available when fetching the notifications feed from the API to display certain parts of the UI.
+
+
+        to - # The recipients list of people who will receive the notification
+
+
+
+        transactionId- #A unique identifier for this transaction, a UUID will be generated if not provided.
+
+
+
+           Example response:
+
+        {
+            acknowledged: true,
+            status: "status",
+            transactionId: "transactionId"
+        }
+
         """
         url = self.base_url + '/events/trigger'
 
         try:
             data['name'] = event
-            response = await requests.post(url=url, headers=self.headers, data=data)
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url=url, headers=self.headers, data=data)
+
+        except httpx.RequestError:
+            raise HTTPException(status_code=500, detail="Something went wrong")
 
         except:
-
-            HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
         return response.json()
 
-    async def broadcast(self, event, body):
+    async def broadcast(self, event, data):
         """
         Trigger a broadcast event to all existing subscribers, could be used to send announcements, etc. 
         In the future could be used to trigger events to a subset of subscribers based on defined filters.
@@ -62,12 +106,16 @@ class Events:
         url = self.base_url + '/events/trigger/broadcast'
 
         try:
-            body['name'] = event
-            response = await requests.post(url=url, headers=self.headers, data=body)
+            data['name'] = event
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url=url, headers=self.headers, data=data)
+
+        except httpx.RequestError:
+            raise HTTPException(status_code=500, detail="Something went wrong")
 
         except:
-
-            HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
         return response.json()
 
@@ -80,6 +128,7 @@ class Events:
 
         url = self.base_url + f'/events/trigger/{transaction_id}'
 
-        response = await requests.delete(url=url, headers=self.s_headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(url=url, headers=self.s_headers)
 
         return response.json()

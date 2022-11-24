@@ -1,27 +1,11 @@
-import requests
-from decouple import config
+import httpx
 from fastapi import HTTPException, status
 
+from .settings import Core
 
 
+class Subscribers(Core):
 
-class Subscribers:
-    
-    base_url = 'https://api.novu.co/v1'
-
-    # simple header with just Api_key
-    # declare api_key in .env file
-    s_header = {'Authorization': 'ApiKey' + config('NOVU_API_KEY')}
-
-    headers = {
-        'Authorization': 'ApiKey'+config('NOVU_API_KEY'),
-        'Content_Type': 'application/json'
-    }
-
-    def __init__(self) -> None:
-
-        pass
-    
     async def list(self, page=None):
         """
         Returns a list of subscribers, could paginated using the `page` query parameter
@@ -30,11 +14,12 @@ class Subscribers:
             f'/subscribers?page={page}' if page else self.base_url + \
             f'/subscribers'
 
-        response = await requests.get(url=url, headers=self.s_headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url=url, headers=self.s_header)
 
         return response.json()
 
-    async def identify(self, user_id, data = None):
+    async def identify(self, user_id, data=None):
         """
         Creates a subscriber entity, in the Novu platform. 
         The subscriber will be later used to receive notifications, and access notification feeds.
@@ -45,14 +30,16 @@ class Subscribers:
         try:
             data['subscriberId'] = str(user_id)
 
-            response = await requests.post(url=url, headers=self.headers, data=data)
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url=url, headers=self.headers, data=data)
+            return response.json()
+
 
         except:
 
-            HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                           detail="Could not subscribe user")
 
-        return response.json()
 
     async def get_subscriber(self, subscriber_id):
         """
@@ -61,7 +48,8 @@ class Subscribers:
 
         url = self.base_url + f'/subscribers/{subscriber_id}'
 
-        response = await requests.get(url=url, headers=self.s_headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url=url, headers=self.s_header)
 
         return response.json()
 
@@ -72,7 +60,8 @@ class Subscribers:
 
         url = self.base_url + f'/subscribers/{subscriber_id}'
 
-        response = await requests.put(url=url, headers=self.headers, data=data)
+        async with httpx.AsyncClient() as client:
+            response = await client.put(url=url, headers=self.headers, data=data)
 
         return response.json()
 
@@ -83,7 +72,8 @@ class Subscribers:
 
         url = self.base_url + f'/subscribers/{subscriber_id}'
 
-        response = await requests.delete(url=url, headers=self.headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(url=url, headers=self.headers)
 
         return response.json()
 
@@ -93,7 +83,8 @@ class Subscribers:
         """
         url = self.base_url + f'/subscribers/{subscriber_id}/credentials'
 
-        response = await requests.put(url=url, headers=self.headers, data=data)
+        async with httpx.AsyncClient() as client:
+            response = await client.put(url=url, headers=self.headers, data=data)
 
         return response.json()
 
@@ -103,7 +94,8 @@ class Subscribers:
         """
         url = self.base_url + f'/subscribers/{subscriber_id}/preferences'
 
-        response = await requests.get(url=url, headers=self.s_headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url=url, headers=self.s_header)
 
         return response.json()
 
@@ -115,7 +107,8 @@ class Subscribers:
         url = self.base_url + \
             f'/subscribers/{subscriber_id}/preferences/{template_id}'
 
-        response = await requests.patch(url=url, headers=self.headers, data=data)
+        async with httpx.AsyncClient() as client:
+            response = await client.patch(url=url, headers=self.headers, data=data)
 
         return response.json()
 
@@ -126,7 +119,8 @@ class Subscribers:
         url = self.base_url + \
             f'/subscribers/{subscriber_id}/notifications/feed'
 
-        response = await requests.get(url=url, headers=self.s_headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url=url, headers=self.s_header)
 
         return response.json()
 
@@ -138,7 +132,8 @@ class Subscribers:
         url = self.base_url + \
             f'/subscribers/{subscriber_id}/notifications/unseen'
 
-        response = await requests.get(url=url, headers=self.s_headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url=url, headers=self.s_header)
 
         return response.json()
 
@@ -150,7 +145,8 @@ class Subscribers:
         url = self.base_url + \
             f'subscribers/{subscriber_id}/messages/{message_id}/seen'
 
-        response = await requests.post(url=url, headers=self.s_header)
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url=url, headers=self.s_header)
 
         return response.json()
 
@@ -161,10 +157,7 @@ class Subscribers:
         url = self.base_url + \
             f'subscribers/{subscriber_id}/messages/{message_id}/actions/{type}'
 
-        response = await requests.post(url=url, headers=self.s_header)
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url=url, headers=self.s_header)
 
         return response.json()
-
-hello = Subscribers()
-
-hello.mark_action_seen()
